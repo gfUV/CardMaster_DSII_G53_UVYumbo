@@ -18,11 +18,15 @@ class App {
   private render() {
     const app = document.querySelector<HTMLDivElement>('#app')!;
     app.innerHTML = `
+      <header>
+        <h1>CardMaster</h1>
+        <p>Tu gestor de cuentas de usuario</p>
+      </header>
       <nav>
-        <button id="home">Home</button>
-        ${!this.token ? '<button id="login">Login</button><button id="register">Register</button>' : '<button id="profile">Profile</button><button id="logout">Logout</button>'}
+        <button id="home">Inicio</button>
+        ${!this.token ? '<button id="login">Iniciar Sesión</button><button id="register">Registrarse</button>' : '<button id="profile">Perfil</button><button id="logout">Cerrar Sesión</button>'}
       </nav>
-      <div id="content"></div>
+      <main id="content"></main>
     `;
     this.bindEvents();
     this.showHome();
@@ -39,21 +43,26 @@ class App {
   private showHome() {
     const content = document.getElementById('content')!;
     content.innerHTML = `
-      <h1>Welcome to CardMaster</h1>
-      <p>Manage your user account here.</p>
+      <section class="welcome">
+        <h2>Bienvenido</h2>
+        <p>Gestiona tu cuenta de usuario de manera segura y fácil.</p>
+        <p>¡Explora las funciones disponibles!</p>
+      </section>
     `;
   }
 
   private showLogin() {
     const content = document.getElementById('content')!;
     content.innerHTML = `
-      <h2>Login</h2>
-      <form id="loginForm">
-        <input type="email" id="loginEmail" placeholder="Email" required>
-        <input type="password" id="loginPassword" placeholder="Password" required>
-        <button type="submit">Login</button>
-      </form>
-      <div id="loginMessage"></div>
+      <section class="auth-section">
+        <h2>Iniciar Sesión</h2>
+        <form id="loginForm">
+          <input type="email" id="loginEmail" placeholder="Correo electrónico" required>
+          <input type="password" id="loginPassword" placeholder="Contraseña" required>
+          <button type="submit">Iniciar Sesión</button>
+        </form>
+        <div id="loginMessage" class="message"></div>
+      </section>
     `;
     document.getElementById('loginForm')?.addEventListener('submit', (e) => this.handleLogin(e));
   }
@@ -61,14 +70,16 @@ class App {
   private showRegister() {
     const content = document.getElementById('content')!;
     content.innerHTML = `
-      <h2>Register</h2>
-      <form id="registerForm">
-        <input type="text" id="regUsername" placeholder="Username" required>
-        <input type="email" id="regEmail" placeholder="Email" required>
-        <input type="password" id="regPassword" placeholder="Password" required>
-        <button type="submit">Register</button>
-      </form>
-      <div id="registerMessage"></div>
+      <section class="auth-section">
+        <h2>Registrarse</h2>
+        <form id="registerForm">
+          <input type="text" id="regUsername" placeholder="Nombre de usuario" required>
+          <input type="email" id="regEmail" placeholder="Correo electrónico" required>
+          <input type="password" id="regPassword" placeholder="Contraseña" required>
+          <button type="submit">Registrarse</button>
+        </form>
+        <div id="registerMessage" class="message"></div>
+      </section>
     `;
     document.getElementById('registerForm')?.addEventListener('submit', (e) => this.handleRegister(e));
   }
@@ -77,16 +88,20 @@ class App {
     if (!this.user) return;
     const content = document.getElementById('content')!;
     content.innerHTML = `
-      <h2>Profile</h2>
-      <p>Username: ${this.user.username}</p>
-      <p>Email: ${this.user.email}</p>
-      <form id="profileForm">
-        <input type="text" id="firstName" placeholder="First Name" value="${this.user.profile?.firstName || ''}">
-        <input type="text" id="lastName" placeholder="Last Name" value="${this.user.profile?.lastName || ''}">
-        <textarea id="bio" placeholder="Bio">${this.user.profile?.bio || ''}</textarea>
-        <button type="submit">Update Profile</button>
-      </form>
-      <div id="profileMessage"></div>
+      <section class="profile-section">
+        <h2>Perfil de Usuario</h2>
+        <div class="user-info">
+          <p><strong>Nombre de usuario:</strong> ${this.user.username}</p>
+          <p><strong>Correo electrónico:</strong> ${this.user.email}</p>
+        </div>
+        <form id="profileForm">
+          <input type="text" id="firstName" placeholder="Nombre" value="${this.user.profile?.firstName || ''}">
+          <input type="text" id="lastName" placeholder="Apellido" value="${this.user.profile?.lastName || ''}">
+          <textarea id="bio" placeholder="Biografía">${this.user.profile?.bio || ''}</textarea>
+          <button type="submit">Actualizar Perfil</button>
+        </form>
+        <div id="profileMessage" class="message"></div>
+      </section>
     `;
     document.getElementById('profileForm')?.addEventListener('submit', (e) => this.handleUpdateProfile(e));
   }
@@ -95,6 +110,7 @@ class App {
     e.preventDefault();
     const email = (document.getElementById('loginEmail') as HTMLInputElement).value;
     const password = (document.getElementById('loginPassword') as HTMLInputElement).value;
+    const messageEl = document.getElementById('loginMessage')!;
     try {
       const response = await api.login(email, password);
       this.token = response.token;
@@ -103,7 +119,9 @@ class App {
       this.render();
       this.showHome();
     } catch (error) {
-      document.getElementById('loginMessage')!.textContent = (error as Error).message;
+      messageEl.textContent = (error as Error).message;
+      messageEl.classList.remove('success');
+      messageEl.classList.add('error');
     }
   }
 
@@ -112,11 +130,16 @@ class App {
     const username = (document.getElementById('regUsername') as HTMLInputElement).value;
     const email = (document.getElementById('regEmail') as HTMLInputElement).value;
     const password = (document.getElementById('regPassword') as HTMLInputElement).value;
+    const messageEl = document.getElementById('registerMessage')!;
     try {
       await api.register(username, email, password);
-      document.getElementById('registerMessage')!.textContent = 'Registration successful! Please login.';
+      messageEl.textContent = '¡Registro exitoso! Por favor inicia sesión.';
+      messageEl.classList.remove('error');
+      messageEl.classList.add('success');
     } catch (error) {
-      document.getElementById('registerMessage')!.textContent = (error as Error).message;
+      messageEl.textContent = (error as Error).message;
+      messageEl.classList.remove('success');
+      messageEl.classList.add('error');
     }
   }
 
@@ -126,11 +149,16 @@ class App {
     const firstName = (document.getElementById('firstName') as HTMLInputElement).value;
     const lastName = (document.getElementById('lastName') as HTMLInputElement).value;
     const bio = (document.getElementById('bio') as HTMLTextAreaElement).value;
+    const messageEl = document.getElementById('profileMessage')!;
     try {
       this.user = await api.updateProfile(this.token, { firstName, lastName, bio });
-      document.getElementById('profileMessage')!.textContent = 'Profile updated!';
+      messageEl.textContent = '¡Perfil actualizado!';
+      messageEl.classList.remove('error');
+      messageEl.classList.add('success');
     } catch (error) {
-      document.getElementById('profileMessage')!.textContent = (error as Error).message;
+      messageEl.textContent = (error as Error).message;
+      messageEl.classList.remove('success');
+      messageEl.classList.add('error');
     }
   }
 
