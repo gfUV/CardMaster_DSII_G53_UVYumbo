@@ -23,7 +23,10 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, email, password }),
     });
-    if (!response.ok) throw new Error('Registration failed');
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Registration failed');
+    }
   },
 
   login: async (email: string, password: string): Promise<LoginResponse> => {
@@ -32,7 +35,10 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
-    if (!response.ok) throw new Error('Login failed');
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Login failed');
+    }
     return response.json();
   },
 
@@ -40,7 +46,10 @@ export const api = {
     const response = await fetch(`${API_BASE}/auth/profile`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    if (!response.ok) throw new Error('Failed to fetch profile');
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch profile');
+    }
     return response.json();
   },
 
@@ -53,7 +62,10 @@ export const api = {
       },
       body: JSON.stringify(updates),
     });
-    if (!response.ok) throw new Error('Failed to update profile');
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to update profile');
+    }
     return response.json();
   },
 };
