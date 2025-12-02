@@ -3,21 +3,20 @@ const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
-  email: { type: String, required: true, unique: true },
+  email:    { type: String, required: true, unique: true },
   password: { type: String, required: true },
+
   profile: {
-    firstName: String,
-    lastName: String,
-    bio: String,
-  },
+    firstName: { type: String, default: "" },
+    lastName:  { type: String, default: "" },
+    bio:       { type: String, default: "" }
+  }
+
 }, { timestamps: true });
 
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
-});
+// La encriptación de contraseña se maneja en las rutas, no en pre-save hooks
 
+// Comparar contraseña
 userSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };

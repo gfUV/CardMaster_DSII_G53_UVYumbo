@@ -5,34 +5,77 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-// Registro
+// ======================
+//      REGISTRO
+// ======================
 router.post('/register', async (req, res) => {
   try {
+    console.log('Registration attempt:', req.body);
     const { username, email, password } = req.body;
-    const user = new User({ username, email, password });
+
+    // Hashear la contraseña antes de crear el usuario
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Crear usuario con perfil vacío por defecto
+    const user = new User({
+      username,
+      email,
+      password: hashedPassword,
+      profile: {
+        firstName: "",
+        lastName: "",
+        bio: ""
+      }
+    });
+
     await user.save();
+    console.log('User registered successfully:', user.username);
+
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
+    console.error('Registration error:', error.message);
     res.status(400).json({ error: error.message });
   }
 });
 
-// Login
+// ======================
+//      LOGIN
+// ======================
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+
     const user = await User.findOne({ email });
+
     if (!user || !(await user.comparePassword(password))) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '1h' });
-    res.json({ token, user: { id: user._id, username: user.username, email: user.email } });
+
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET || 'secret',
+      { expiresIn: '1h' }
+    );
+
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        profile: user.profile
+      }
+    });
+
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Perfil (requiere auth)
+// ======================
+//      OBTENER PERFIL
+// ======================
 router.get('/profile', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
@@ -42,13 +85,27 @@ router.get('/profile', auth, async (req, res) => {
   }
 });
 
-// Actualizar perfil
+// ======================
+//    ACTUALIZAR PERFIL
+// ======================
 router.put('/profile', auth, async (req, res) => {
   try {
-    const updates = req.body;
-    delete updates.password; // No permitir cambiar password aquí
-    const user = await User.findByIdAndUpdate(req.user.id, updates, { new: true }).select('-password');
+    const { firstName, lastName, bio } = req.body;
+
+    const updates = {
+      "profile.firstName": firstName,
+      "profile.lastName": lastName,
+      "profile.bio": bio
+    };
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { $set: updates },
+      { new: true }
+    ).select('-password');
+
     res.json(user);
+
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
