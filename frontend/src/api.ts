@@ -8,6 +8,7 @@ export interface User {
     firstName?: string;
     lastName?: string;
     bio?: string;
+    dateOfBirth?: string;
   };
 }
 
@@ -17,11 +18,11 @@ export interface LoginResponse {
 }
 
 export const api = {
-  register: async (username: string, email: string, password: string): Promise<void> => {
+  register: async (username: string, email: string, password: string, dateOfBirth?: string): Promise<void> => {
     const response = await fetch(`${API_BASE}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password }),
+      body: JSON.stringify({ username, email, password, dateOfBirth }),
     });
     if (!response.ok) {
       const errorData = await response.json();
@@ -53,7 +54,7 @@ export const api = {
     return response.json();
   },
 
-  updateProfile: async (token: string, updates: Partial<User['profile']>): Promise<User> => {
+  updateProfile: async (token: string, updates: Partial<User['profile'] & { email?: string }>): Promise<User> => {
     const response = await fetch(`${API_BASE}/auth/profile`, {
       method: 'PUT',
       headers: {

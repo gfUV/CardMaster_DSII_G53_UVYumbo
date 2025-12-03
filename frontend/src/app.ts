@@ -76,6 +76,8 @@ class App {
           <input type="text" id="regUsername" placeholder="Nombre de usuario" required>
           <input type="email" id="regEmail" placeholder="Correo electrónico" required>
           <input type="password" id="regPassword" placeholder="Contraseña" required>
+          <input type="password" id="regConfirmPassword" placeholder="Rectificar contraseña" required>
+          <input type="date" id="regDateOfBirth" placeholder="Fecha de nacimiento">
           <button type="submit">Registrarse</button>
         </form>
         <div id="registerMessage" class="message"></div>
@@ -92,9 +94,10 @@ class App {
         <h2>Perfil de Usuario</h2>
         <div class="user-info">
           <p><strong>Nombre de usuario:</strong> ${this.user.username}</p>
-          <p><strong>Correo electrónico:</strong> ${this.user.email}</p>
         </div>
         <form id="profileForm">
+          <input type="email" id="email" placeholder="Correo electrónico" value="${this.user.email}" required>
+          <input type="date" id="dateOfBirth" placeholder="Fecha de nacimiento" value="${this.user.profile?.dateOfBirth ? this.user.profile.dateOfBirth.split('T')[0] : ''}">
           <input type="text" id="firstName" placeholder="Nombre" value="${this.user.profile?.firstName || ''}">
           <input type="text" id="lastName" placeholder="Apellido" value="${this.user.profile?.lastName || ''}">
           <textarea id="bio" placeholder="Biografía">${this.user.profile?.bio || ''}</textarea>
@@ -130,9 +133,19 @@ class App {
     const username = (document.getElementById('regUsername') as HTMLInputElement).value;
     const email = (document.getElementById('regEmail') as HTMLInputElement).value;
     const password = (document.getElementById('regPassword') as HTMLInputElement).value;
+    const confirmPassword = (document.getElementById('regConfirmPassword') as HTMLInputElement).value;
+    const dateOfBirth = (document.getElementById('regDateOfBirth') as HTMLInputElement).value;
     const messageEl = document.getElementById('registerMessage')!;
+
+    if (password !== confirmPassword) {
+      messageEl.textContent = 'Las contraseñas no coinciden.';
+      messageEl.classList.remove('success');
+      messageEl.classList.add('error');
+      return;
+    }
+
     try {
-      await api.register(username, email, password);
+      await api.register(username, email, password, dateOfBirth || undefined);
       messageEl.textContent = '¡Registro exitoso! Por favor inicia sesión.';
       messageEl.classList.remove('error');
       messageEl.classList.add('success');
@@ -146,12 +159,14 @@ class App {
   private async handleUpdateProfile(e: Event) {
     e.preventDefault();
     if (!this.token) return;
+    const email = (document.getElementById('email') as HTMLInputElement).value;
+    const dateOfBirth = (document.getElementById('dateOfBirth') as HTMLInputElement).value;
     const firstName = (document.getElementById('firstName') as HTMLInputElement).value;
     const lastName = (document.getElementById('lastName') as HTMLInputElement).value;
     const bio = (document.getElementById('bio') as HTMLTextAreaElement).value;
     const messageEl = document.getElementById('profileMessage')!;
     try {
-      this.user = await api.updateProfile(this.token, { firstName, lastName, bio });
+      this.user = await api.updateProfile(this.token, { email, dateOfBirth: dateOfBirth || undefined, firstName, lastName, bio });
       messageEl.textContent = '¡Perfil actualizado!';
       messageEl.classList.remove('error');
       messageEl.classList.add('success');
