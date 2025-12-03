@@ -9,7 +9,7 @@ const app = express();
 
 // ---- CORS DEBE IR AQUÍ, NO AL FINAL ----
 app.use(cors({
-  origin: ["http://localhost:5174", "http://localhost:5000"],
+  origin: ["http://localhost:5173", "http://localhost:5000"],
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));

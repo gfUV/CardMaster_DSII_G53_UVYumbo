@@ -9,7 +9,8 @@ const userSchema = new mongoose.Schema({
   profile: {
     firstName: { type: String, default: "" },
     lastName:  { type: String, default: "" },
-    bio:       { type: String, default: "" }
+    bio:       { type: String, default: "" },
+    dateOfBirth: { type: Date }
   }
 
 }, { timestamps: true });

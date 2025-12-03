@@ -11,7 +11,7 @@ const router = express.Router();
 router.post('/register', async (req, res) => {
   try {
     console.log('Registration attempt:', req.body);
-    const { username, email, password } = req.body;
+    const { username, email, password, dateOfBirth } = req.body;
 
     // Hashear la contraseña antes de crear el usuario
     const bcrypt = require('bcryptjs');
@@ -25,7 +25,8 @@ router.post('/register', async (req, res) => {
       profile: {
         firstName: "",
         lastName: "",
-        bio: ""
+        bio: "",
+        dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined
       }
     });
 
@@ -90,13 +91,14 @@ router.get('/profile', auth, async (req, res) => {
 // ======================
 router.put('/profile', auth, async (req, res) => {
   try {
-    const { firstName, lastName, bio } = req.body;
+    const { firstName, lastName, bio, email, dateOfBirth } = req.body;
 
-    const updates = {
-      "profile.firstName": firstName,
-      "profile.lastName": lastName,
-      "profile.bio": bio
-    };
+    const updates = {};
+    if (firstName !== undefined) updates["profile.firstName"] = firstName;
+    if (lastName !== undefined) updates["profile.lastName"] = lastName;
+    if (bio !== undefined) updates["profile.bio"] = bio;
+    if (email !== undefined) updates.email = email;
+    if (dateOfBirth !== undefined) updates["profile.dateOfBirth"] = dateOfBirth ? new Date(dateOfBirth) : undefined;
 
     const user = await User.findByIdAndUpdate(
       req.user.id,
