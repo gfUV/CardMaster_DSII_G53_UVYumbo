@@ -8,9 +8,13 @@ dotenv.config();
 
 const app = express();
 
-// Configurar CORS
+// Configurar CORS (permite frontend en producción y desarrollo)
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5000'],
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:5000',
+    process.env.FRONTEND_URL
+  ].filter(Boolean),
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
@@ -32,6 +36,6 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'Backend is working!', timestamp: new Date().toISOString() });
 });
 
-// Arrancar servidor
+// Arrancar servidor (escuchar en todas las interfaces)
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
