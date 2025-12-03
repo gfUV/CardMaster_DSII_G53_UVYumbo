@@ -7,11 +7,14 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
 
   profile: {
-    firstName: { type: String, default: "" },
-    lastName:  { type: String, default: "" },
-    bio:       { type: String, default: "" },
-    dateOfBirth: { type: Date }
-  }
+    firstName:  { type: String, default: "" },
+    lastName:   { type: String, default: "" },
+    bio:        { type: String, default: "" },
+    dateOfBirth:{ type: Date }
+  },
+
+  resetPasswordToken:   { type: String },
+  resetPasswordExpires: { type: Date }
 
 }, { timestamps: true });
 

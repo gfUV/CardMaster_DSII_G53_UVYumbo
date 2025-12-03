@@ -1,0 +1,25 @@
+# Dependencias
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Entorno y secretos
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Builds / coverage (por si luego los usas)
+dist/
+build/
+coverage/
+
+# Archivos del sistema / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
