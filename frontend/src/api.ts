@@ -69,4 +69,28 @@ export const api = {
     }
     return response.json();
   },
+
+  forgotPassword: async (email: string): Promise<void> => {
+    const response = await fetch(`${API_BASE}/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to request password reset');
+    }
+  },
+
+  resetPassword: async (token: string, password: string): Promise<void> => {
+    const response = await fetch(`${API_BASE}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, password }),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to reset password');
+    }
+  },
 };

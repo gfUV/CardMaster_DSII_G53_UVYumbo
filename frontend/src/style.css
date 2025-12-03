@@ -165,6 +165,15 @@ textarea {
   resize: vertical;
 }
 
+.link-button {
+  background: none;
+  border: none;
+  color: #0056b3;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
