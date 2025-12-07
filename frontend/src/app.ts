@@ -31,13 +31,14 @@ class App {
       <header>
         <h1>CardMaster</h1>
         <p>Tu gestor de cuentas de usuario</p>
+        ${this.token ? '<div class="user-actions"><span id="profile-icon" class="icon">👤</span><span id="logout-icon" class="icon">🚪</span></div>' : ''}
       </header>
       <nav>
         <button id="home">Inicio</button>
         ${
           !this.token
             ? '<button id="login">Iniciar Sesión</button><button id="register">Registrarse</button>'
-            : '<button id="profile">Perfil</button><button id="logout">Cerrar Sesión</button>'
+            : ''
         }
       </nav>
       <main id="content"></main>
@@ -62,16 +63,56 @@ class App {
     document
       .getElementById("logout")
       ?.addEventListener("click", () => this.logout());
+    document
+      .getElementById("profile-icon")
+      ?.addEventListener("click", () => this.showProfile());
+    document
+      .getElementById("logout-icon")
+      ?.addEventListener("click", () => this.logout());
   }
 
   private showHome() {
     const content = document.getElementById("content")!;
+    let extraContent = '';
+    if (this.token) {
+      extraContent = `
+        <section class="game-section">
+          <div class="game-buttons">
+            <button id="quick-play">Jugar partida rápida</button>
+            <button id="online-play">Jugar online</button>
+            <button id="friends-play">Partida con amigos</button>
+            <button id="tutorial">Tutorial</button>
+            <button id="scores">Ver puntuaciones</button>
+          </div>
+        </section>
+        <section class="game-info">
+          <h3>¿Qué es CardMaster?</h3>
+          <p>CardMaster es un emocionante juego de cartas estratégico donde los jugadores compiten por acumular puntos mediante combinaciones inteligentes de cartas.</p>
+          <h4>Reglas básicas:</h4>
+          <ul>
+            <li>Cada jugador recibe un mazo inicial de cartas.</li>
+            <li>En cada turno, juega una carta para formar combinaciones.</li>
+            <li>Gana puntos por parejas, tríos y secuencias.</li>
+            <li>El juego termina cuando se agotan las cartas o un jugador alcanza el puntaje objetivo.</li>
+          </ul>
+          <h4>Cómo ganar:</h4>
+          <p>El jugador con más puntos al final de la partida es el ganador. Las combinaciones especiales otorgan bonificaciones extra.</p>
+          <h4>Modos de juego:</h4>
+          <ul>
+            <li><strong>Partida rápida:</strong> Juego corto contra la IA.</li>
+            <li><strong>Online:</strong> Compite contra jugadores de todo el mundo.</li>
+            <li><strong>Con amigos:</strong> Crea salas privadas para jugar con conocidos.</li>
+          </ul>
+        </section>
+      `;
+    }
     content.innerHTML = `
       <section class="welcome">
-        <h2>Bienvenido</h2>
+        <h2>Bienvenido${this.user ? ', ' + this.user.username : ''}</h2>
         <p>Gestiona tu cuenta de usuario de manera segura y fácil.</p>
         <p>¡Explora las funciones disponibles!</p>
       </section>
+      ${extraContent}
     `;
   }
 

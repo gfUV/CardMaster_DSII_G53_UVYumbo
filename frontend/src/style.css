@@ -55,6 +55,7 @@ h2 {
 header {
   text-align: center;
   margin-bottom: 2rem;
+  position: relative;
 }
 
 header h1 {
@@ -64,6 +65,36 @@ header h1 {
 header p {
   color: var(--poker-medium-green);
   font-size: 1.1rem;
+}
+
+.user-actions {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 15px;
+}
+
+.icon {
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 50%;
+  background: var(--poker-light);
+  border: 2px solid var(--poker-medium-green);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+}
+
+.icon:hover {
+  background: var(--poker-medium-green);
+  color: white;
+  transform: scale(1.1);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 #content {
@@ -238,6 +269,71 @@ button:focus-visible {
   border-color: var(--poker-brown);
 }
 
+.game-section {
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.game-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.game-buttons button {
+  flex: 1 1 200px;
+  min-width: 180px;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  border: 2px solid var(--poker-brown);
+  background: linear-gradient(135deg, var(--poker-light), var(--poker-medium-green));
+  color: var(--poker-dark-green);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.game-buttons button:hover {
+  background: linear-gradient(135deg, var(--poker-medium-green), var(--poker-dark-green));
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.game-info {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: linear-gradient(135deg, var(--poker-light), #f0f0f0);
+  border-radius: 15px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  border: 1px solid var(--poker-medium-green);
+}
+
+.game-info h3, .game-info h4 {
+  color: var(--poker-dark-green);
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.game-info p, .game-info ul, .game-info li {
+  color: var(--poker-dark-green);
+  line-height: 1.6;
+}
+
+.game-info ul {
+  margin-left: 1.5rem;
+}
+
+.game-info li {
+  margin-bottom: 0.5rem;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   #app {
@@ -270,6 +366,33 @@ button:focus-visible {
   .user-info {
     padding: 1rem;
   }
+
+  .user-actions {
+    top: 10px;
+    right: 10px;
+    gap: 10px;
+  }
+
+  .icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+
+  .game-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .game-buttons button {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .game-info {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -292,5 +415,23 @@ button:focus-visible {
 
   input, textarea {
     padding: 0.6rem;
+  }
+
+  .user-actions {
+    gap: 8px;
+  }
+
+  .icon {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+  }
+
+  .game-info {
+    padding: 1rem;
+  }
+
+  .game-info h3, .game-info h4 {
+    font-size: 1.2rem;
   }
 }
