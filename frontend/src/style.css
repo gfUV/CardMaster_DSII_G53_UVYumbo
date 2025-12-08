@@ -286,13 +286,13 @@ button:focus-visible {
 .game-buttons button {
   flex: 1 1 200px;
   min-width: 180px;
-  padding: 1rem;
-  font-size: 1.1rem;
+  padding: 1.5rem;
+  font-size: 1.3rem;
   font-weight: 600;
   border-radius: 12px;
   border: 2px solid var(--poker-brown);
-  background: linear-gradient(135deg, var(--poker-light), var(--poker-medium-green));
-  color: var(--poker-dark-green);
+  background: var(--poker-medium-green);
+  color: white;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -334,6 +334,157 @@ button:focus-visible {
   margin-bottom: 0.5rem;
 }
 
+.level-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin: 2rem auto;
+  max-width: 300px;
+}
+
+.level-button {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 2px solid var(--poker-brown);
+  background: white;
+  color: var(--poker-dark-green);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.level-button:hover {
+  background: var(--poker-medium-green);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.level-button.selected {
+  background: var(--poker-medium-green);
+  color: white;
+  border-color: var(--poker-dark-green);
+}
+
+.search-button {
+  background: var(--poker-light);
+  color: var(--poker-dark-green);
+  border: 2px solid var(--poker-medium-green);
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 2rem;
+}
+
+.search-button:hover:not(:disabled) {
+  background: var(--poker-brown);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.search-button:disabled {
+  background: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.search-button.enabled {
+  background: lightcoral;
+  color: darkred;
+  border-color: darkred;
+}
+
+.loading-section {
+  text-align: center;
+  margin: 2rem 0;
+  padding: 2rem;
+  background: linear-gradient(135deg, var(--poker-light), #f0f0f0);
+  border-radius: 15px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  border: 1px solid var(--poker-medium-green);
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid var(--poker-light);
+  border-top: 5px solid var(--poker-red);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 2rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+#timer {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--poker-dark-green);
+  margin-top: 1rem;
+}
+
+.cancel-button {
+  background: linear-gradient(135deg, var(--poker-red), var(--poker-brown));
+  color: white;
+  border: 2px solid var(--poker-brown);
+  padding: 0.75em 1.5em;
+  border-radius: 10px;
+  font-size: 1em;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.cancel-button:hover {
+  background: linear-gradient(135deg, var(--poker-brown), var(--poker-red));
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.back-button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: var(--poker-medium-green);
+  color: white;
+  border: 2px solid var(--poker-dark-green);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+.back-button:hover {
+  background: var(--poker-dark-green);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.nav-center {
+  text-align: center;
+  flex: 1;
+}
+
+.nav-center h3 {
+  color: white;
+  font-size: 1.2rem;
+  margin: 0;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   #app {
@@ -352,6 +503,10 @@ button:focus-visible {
   nav {
     flex-direction: column;
     gap: 0.5rem;
+  }
+
+  .nav-center {
+    order: -1;
   }
 
   nav button {

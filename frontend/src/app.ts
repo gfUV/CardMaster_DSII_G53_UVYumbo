@@ -3,6 +3,8 @@ import { api, type User } from "./api";
 class App {
   private token: string | null = localStorage.getItem("token");
   private user: User | null = null;
+  private timerInterval: number | null = null;
+  private selectedLevel: string | null = null;
 
   constructor() {
     this.init();
@@ -34,22 +36,28 @@ class App {
         ${this.token ? '<div class="user-actions"><span id="profile-icon" class="icon">👤</span><span id="logout-icon" class="icon">🚪</span></div>' : ''}
       </header>
       <nav>
-        <button id="home">Inicio</button>
         ${
-          !this.token
-            ? '<button id="login">Iniciar Sesión</button><button id="register">Registrarse</button>'
-            : ''
+          this.token
+            ? '<div class="nav-center"><h3>Inicio</h3></div>'
+            : '<button id="login">Iniciar Sesión</button><button id="register">Registrarse</button>'
         }
       </nav>
       <main id="content"></main>
     `;
     this.bindEvents();
-    this.showHome();
+    if (this.token) {
+      this.showHome();
+    } else {
+      this.showLogin();
+    }
   }
 
   private bindEvents() {
     document
       .getElementById("home")
+      ?.addEventListener("click", () => this.showHome());
+    document
+      .getElementById("home-title")
       ?.addEventListener("click", () => this.showHome());
     document
       .getElementById("login")
@@ -69,6 +77,12 @@ class App {
     document
       .getElementById("logout-icon")
       ?.addEventListener("click", () => this.logout());
+    document
+      .getElementById("quick-play")
+      ?.addEventListener("click", () => this.handleQuickPlay());
+    document
+      .getElementById("tutorial")
+      ?.addEventListener("click", () => this.showTutorial());
   }
 
   private showHome() {
@@ -114,6 +128,16 @@ class App {
       </section>
       ${extraContent}
     `;
+
+    // Bind events for dynamically created buttons
+    if (this.token) {
+      document
+        .getElementById("quick-play")
+        ?.addEventListener("click", () => this.handleQuickPlay());
+      document
+        .getElementById("online-play")
+        ?.addEventListener("click", () => this.handleOnlinePlay());
+    }
   }
 
   private showLogin() {
@@ -124,7 +148,7 @@ class App {
         <form id="loginForm">
           <input type="email" id="loginEmail" placeholder="Correo electrónico" required>
           <input type="password" id="loginPassword" placeholder="Contraseña" required>
-          <button type="submit">Iniciar Sesión</button>
+          <button type="submit" class="auth-button">Iniciar Sesión</button>
         </form>
         <a id="forgotPasswordLink" href="#" class="link-button">¿Olvidaste tu contraseña?</a>
         <div id="loginMessage" class="message"></div>
@@ -149,7 +173,7 @@ class App {
           <input type="password" id="regPassword" placeholder="Contraseña" required>
           <input type="password" id="regConfirmPassword" placeholder="Rectificar contraseña" required>
           <input type="date" id="regDateOfBirth" placeholder="Fecha de nacimiento">
-          <button type="submit">Registrarse</button>
+          <button type="submit" class="auth-button">Registrarse</button>
         </form>
         <div id="registerMessage" class="message"></div>
       </section>
@@ -164,6 +188,7 @@ class App {
     const content = document.getElementById("content")!;
     content.innerHTML = `
       <section class="profile-section">
+        <button id="back-to-home" class="back-button">← Volver</button>
         <h2>Perfil de Usuario</h2>
         <div class="user-info">
           <p><strong>Nombre de usuario:</strong> ${this.user.username}</p>
@@ -194,6 +219,9 @@ class App {
     document
       .getElementById("profileForm")
       ?.addEventListener("submit", (e) => this.handleUpdateProfile(e));
+    document
+      .getElementById("back-to-home")
+      ?.addEventListener("click", () => this.showHome());
   }
 
   private showForgotPassword() {
@@ -402,6 +430,143 @@ class App {
     this.user = null;
     localStorage.removeItem("token");
     this.render();
+  }
+
+  private handleQuickPlay() {
+    const content = document.getElementById("content")!;
+    content.innerHTML = `
+      <section class="loading-section">
+        <div class="spinner"></div>
+        <h2>Tiempo estimado</h2>
+        <div id="timer">00:00</div>
+        <button id="cancel-matchmaking" class="cancel-button">Cancelar emparejamiento</button>
+      </section>
+    `;
+    this.startTimer();
+    document
+      .getElementById("cancel-matchmaking")
+      ?.addEventListener("click", () => this.cancelMatchmaking());
+  }
+
+  private handleOnlinePlay() {
+    const content = document.getElementById("content")!;
+    content.innerHTML = `
+      <section class="auth-section">
+        <h2>Selecciona tu nivel</h2>
+        <div class="level-buttons">
+          <button id="level-malo" class="level-button">Malo</button>
+          <button id="level-regular" class="level-button">Regular</button>
+          <button id="level-bueno" class="level-button">Bueno</button>
+          <button id="level-pro" class="level-button">Pro</button>
+        </div>
+        <button id="search-rival" class="search-button" disabled>Buscar rival</button>
+        <button id="back-to-home-online" class="back-button">← Volver</button>
+      </section>
+    `;
+    document
+      .getElementById("level-malo")
+      ?.addEventListener("click", () => this.selectLevel("Malo"));
+    document
+      .getElementById("level-regular")
+      ?.addEventListener("click", () => this.selectLevel("Regular"));
+    document
+      .getElementById("level-bueno")
+      ?.addEventListener("click", () => this.selectLevel("Bueno"));
+    document
+      .getElementById("level-pro")
+      ?.addEventListener("click", () => this.selectLevel("Pro"));
+    document
+      .getElementById("search-rival")
+      ?.addEventListener("click", () => this.searchRival());
+    document
+      .getElementById("back-to-home-online")
+      ?.addEventListener("click", () => this.showHome());
+  }
+
+  private selectLevel(level: string) {
+    this.selectedLevel = level;
+    // Remove selected class from all buttons
+    document.querySelectorAll(".level-button").forEach(btn => btn.classList.remove("selected"));
+    // Add selected class to clicked button
+    document.getElementById(`level-${level.toLowerCase()}`)?.classList.add("selected");
+    // Enable search button and change color
+    const searchButton = document.getElementById("search-rival") as HTMLButtonElement;
+    searchButton.disabled = false;
+    searchButton.classList.add("enabled");
+  }
+
+  private searchRival() {
+    if (!this.selectedLevel) return;
+    const content = document.getElementById("content")!;
+    content.innerHTML = `
+      <section class="loading-section">
+        <div class="spinner"></div>
+        <h2>Buscando rival en nivel ${this.selectedLevel}</h2>
+        <div id="timer">00:00</div>
+        <button id="cancel-matchmaking" class="cancel-button">Cancelar búsqueda</button>
+      </section>
+    `;
+    this.startTimer();
+    document
+      .getElementById("cancel-matchmaking")
+      ?.addEventListener("click", () => this.cancelMatchmaking());
+  }
+
+  private startTimer() {
+    let seconds = 0;
+    const maxSeconds = 5 * 60; // 5 minutos
+    const timerElement = document.getElementById("timer")!;
+
+    this.timerInterval = setInterval(() => {
+      seconds++;
+      const minutes = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+      if (seconds >= maxSeconds) {
+        clearInterval(this.timerInterval!);
+        this.timerInterval = null;
+        // Aquí podrías redirigir al juego o mostrar un mensaje
+        alert("¡Partida rápida lista!");
+      }
+    }, 1000);
+  }
+
+  private cancelMatchmaking() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+    this.showHome();
+  }
+
+  private showTutorial() {
+    const content = document.getElementById("content")!;
+    content.innerHTML = `
+      <section class="game-info">
+        <button id="back-to-home-tutorial" class="back-button">← Volver</button>
+        <h3>¿Qué es CardMaster?</h3>
+        <p>CardMaster es un emocionante juego de cartas estratégico donde los jugadores compiten por acumular puntos mediante combinaciones inteligentes de cartas.</p>
+        <h4>Reglas básicas:</h4>
+        <ul>
+          <li>Cada jugador recibe un mazo inicial de cartas.</li>
+          <li>En cada turno, juega una carta para formar combinaciones.</li>
+          <li>Gana puntos por parejas, tríos y secuencias.</li>
+          <li>El juego termina cuando se agotan las cartas o un jugador alcanza el puntaje objetivo.</li>
+        </ul>
+        <h4>Cómo ganar:</h4>
+        <p>El jugador con más puntos al final de la partida es el ganador. Las combinaciones especiales otorgan bonificaciones extra.</p>
+        <h4>Modos de juego:</h4>
+        <ul>
+          <li><strong>Partida rápida:</strong> Juego corto contra la IA.</li>
+          <li><strong>Online:</strong> Compite contra jugadores de todo el mundo.</li>
+          <li><strong>Con amigos:</strong> Crea salas privadas para jugar con conocidos.</li>
+        </ul>
+      </section>
+    `;
+    document
+      .getElementById("back-to-home-tutorial")
+      ?.addEventListener("click", () => this.showHome());
   }
 }
 
