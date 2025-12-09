@@ -599,7 +599,6 @@ class App {
 
   private handleCreateRoom() {
     const roomName = (document.getElementById("room-name") as HTMLInputElement).value.trim();
-    const numPlayers = (document.getElementById("num-players") as HTMLSelectElement).value;
     const selectedMode = document.querySelector('input[name="game-mode"]:checked') as HTMLInputElement;
 
     if (!roomName) {
