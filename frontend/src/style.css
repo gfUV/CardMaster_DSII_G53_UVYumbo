@@ -334,6 +334,205 @@ button:focus-visible {
   margin-bottom: 0.5rem;
 }
 
+.friends-play-section {
+  text-align: center;
+  margin: 2rem 0;
+  padding: 2rem;
+  background: linear-gradient(135deg, var(--poker-light), #f0f0f0);
+  border-radius: 15px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  border: 1px solid var(--poker-medium-green);
+}
+
+.friends-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin: 2rem auto;
+  max-width: 300px;
+}
+
+.friends-button {
+  padding: 1.5rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  border-radius: 12px;
+  border: 2px solid var(--poker-brown);
+  background: var(--poker-medium-green);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.friends-button:hover {
+  background: linear-gradient(135deg, var(--poker-medium-green), var(--poker-dark-green));
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.create-room-section {
+  text-align: center;
+  margin: 2rem 0;
+  padding: 2rem;
+  background: linear-gradient(135deg, var(--poker-light), #f0f0f0);
+  border-radius: 15px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  border: 1px solid var(--poker-medium-green);
+}
+
+.create-room-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.form-group {
+  width: 100%;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--poker-dark-green);
+}
+
+.form-group input {
+  width: 100%;
+}
+
+.option-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  gap: 0.5rem;
+}
+
+.option-label {
+  font-weight: 600;
+  color: var(--poker-dark-green);
+  flex-shrink: 0;
+}
+
+.small-select {
+  width: auto;
+  min-width: 80px;
+  padding: 0.5rem;
+  border: 2px solid var(--poker-brown);
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  color: black;
+}
+
+.small-select:focus {
+  outline: none;
+  border-color: var(--poker-red);
+  box-shadow: 0 0 8px rgba(216, 72, 72, 0.4);
+}
+
+.game-modes-row {
+  align-items: flex-start;
+}
+
+.game-modes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.game-modes label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: normal;
+  margin: 0;
+}
+
+.game-modes input[type="radio"] {
+  width: auto;
+  margin: 0;
+}
+
+.create-room-button.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--poker-light);
+  color: var(--poker-dark-green);
+  border-color: var(--poker-medium-green);
+}
+
+.create-room-button.disabled:hover {
+  background: var(--poker-light);
+  transform: none;
+  box-shadow: none;
+}
+
+.join-room-section {
+  text-align: center;
+  margin: 2rem 0;
+  padding: 2rem;
+  background: linear-gradient(135deg, var(--poker-light), #f0f0f0);
+  border-radius: 15px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  border: 1px solid var(--poker-medium-green);
+}
+
+.join-room-form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+#room-code {
+  width: 120px;
+  padding: 0.75rem;
+  border: 2px solid var(--poker-brown);
+  border-radius: 10px;
+  font-size: 1.2rem;
+  text-align: center;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  background: white;
+  color: black;
+}
+
+#room-code:focus {
+  outline: none;
+  border-color: var(--poker-red);
+  box-shadow: 0 0 8px rgba(216, 72, 72, 0.4);
+  background: #fefefe;
+}
+
+.accept-button {
+  background: linear-gradient(135deg, var(--poker-red), var(--poker-brown));
+  color: white;
+  border: 2px solid var(--poker-brown);
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-size: 1em;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.accept-button:hover {
+  background: linear-gradient(135deg, var(--poker-brown), var(--poker-red));
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
 .level-buttons {
   display: flex;
   flex-direction: column;

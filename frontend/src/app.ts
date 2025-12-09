@@ -137,6 +137,9 @@ class App {
       document
         .getElementById("online-play")
         ?.addEventListener("click", () => this.handleOnlinePlay());
+      document
+        .getElementById("friends-play")
+        ?.addEventListener("click", () => this.handleFriendsPlay());
     }
   }
 
@@ -481,6 +484,262 @@ class App {
     document
       .getElementById("back-to-home-online")
       ?.addEventListener("click", () => this.showHome());
+  }
+
+  private handleFriendsPlay() {
+    const content = document.getElementById("content")!;
+    content.innerHTML = `
+      <section class="friends-play-section">
+        <h2>Partida con Amigos</h2>
+        <div class="friends-options">
+          <button id="create-room" class="friends-button">Crear sala</button>
+          <button id="join-room" class="friends-button">Unirse a sala</button>
+        </div>
+        <button id="back-to-home-friends" class="back-button">← Volver</button>
+      </section>
+    `;
+    document
+      .getElementById("create-room")
+      ?.addEventListener("click", () => this.showCreateRoom());
+    document
+      .getElementById("join-room")
+      ?.addEventListener("click", () => this.showJoinRoom());
+    document
+      .getElementById("back-to-home-friends")
+      ?.addEventListener("click", () => this.showHome());
+  }
+
+  private showCreateRoom() {
+    const content = document.getElementById("content")!;
+    content.innerHTML = `
+      <section class="create-room-section">
+        <h2>Crear sala</h2>
+        <div class="create-room-form">
+          <div class="form-group">
+            <label for="room-name">Nombre de la sala:</label>
+            <input type="text" id="room-name" placeholder="Nombre de la sala">
+          </div>
+          <div class="option-row">
+            <label class="option-label">Número de jugadores:</label>
+            <select id="num-players" class="small-select">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
+          </div>
+          <div class="option-row game-modes-row">
+            <label class="option-label">Modos de juego:</label>
+            <div class="game-modes">
+              <label><input type="radio" name="game-mode" value="Juegos de bazas"> Juegos de bazas</label>
+              <label><input type="radio" name="game-mode" value="Juegos de descarte"> Juegos de descarte</label>
+              <label><input type="radio" name="game-mode" value="Juegos de emparejamiento"> Juegos de emparejamiento</label>
+              <label><input type="radio" name="game-mode" value="Juegos de comparación"> Juegos de comparación</label>
+              <label><input type="radio" name="game-mode" value="Juegos de apuestas"> Juegos de apuestas</label>
+              <label><input type="radio" name="game-mode" value="Juegos de solitario"> Juegos de solitario</label>
+            </div>
+          </div>
+          <button id="create-room-btn" class="create-room-button">Crear sala</button>
+        </div>
+        <button id="back-to-friends-create" class="back-button">← Volver</button>
+      </section>
+    `;
+
+    // Validación para nombre de sala: solo letras y espacios
+    const roomNameInput = document.getElementById("room-name") as HTMLInputElement;
+    roomNameInput.addEventListener("input", (e) => {
+      const target = e.target as HTMLInputElement;
+      target.value = target.value.replace(/[^a-zA-Z\s]/g, ''); // Solo letras y espacios
+      this.validateCreateRoomForm();
+    });
+
+    // Validación para cambios en el select de número de jugadores
+    const numPlayersSelect = document.getElementById("num-players") as HTMLSelectElement;
+    numPlayersSelect.addEventListener("change", () => {
+      this.validateCreateRoomForm();
+    });
+
+    // Validación para cambios en los radio buttons de modos de juego
+    const gameModeRadios = document.querySelectorAll('input[name="game-mode"]');
+    gameModeRadios.forEach(radio => {
+      radio.addEventListener("change", () => {
+        this.validateCreateRoomForm();
+      });
+    });
+
+    document
+      .getElementById("create-room-btn")
+      ?.addEventListener("click", () => this.handleCreateRoom());
+    document
+      .getElementById("back-to-friends-create")
+      ?.addEventListener("click", () => this.handleFriendsPlay());
+
+    // Inicializar validación del formulario
+    this.validateCreateRoomForm();
+  }
+
+  private validateCreateRoomForm() {
+    const roomName = (document.getElementById("room-name") as HTMLInputElement).value.trim();
+    const numPlayers = (document.getElementById("num-players") as HTMLSelectElement).value;
+    const selectedMode = document.querySelector('input[name="game-mode"]:checked') as HTMLInputElement;
+    const createButton = document.getElementById("create-room-btn") as HTMLButtonElement;
+
+    const isValid = roomName.length > 0 && numPlayers !== "" && selectedMode !== null;
+
+    if (isValid) {
+      createButton.disabled = false;
+      createButton.classList.remove("disabled");
+      createButton.textContent = "Crear";
+    } else {
+      createButton.disabled = true;
+      createButton.classList.add("disabled");
+      createButton.textContent = "Crear sala";
+    }
+  }
+
+  private handleCreateRoom() {
+    const roomName = (document.getElementById("room-name") as HTMLInputElement).value.trim();
+    const numPlayers = (document.getElementById("num-players") as HTMLSelectElement).value;
+    const selectedMode = document.querySelector('input[name="game-mode"]:checked') as HTMLInputElement;
+
+    if (!roomName) {
+      alert("Por favor, ingresa un nombre para la sala.");
+      return;
+    }
+
+    if (!selectedMode) {
+      alert("Por favor, selecciona un modo de juego.");
+      return;
+    }
+
+    // Generar código de 6 dígitos al azar
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Mostrar pantalla de espera
+    this.showWaitingForRival(code);
+  }
+
+  private showWaitingForRival(code: string) {
+    const content = document.getElementById("content")!;
+    content.innerHTML = `
+      <section class="waiting-section">
+        <div class="spinner"></div>
+        <h2>Esperando a tu rival</h2>
+        <div id="waiting-timer">00:00</div>
+        <p class="room-code">Código: <span style="color: black; font-size: normal;">${code}</span></p>
+        <button id="cancel-waiting" class="cancel-button">Cancelar emparejamiento</button>
+      </section>
+    `;
+    this.startWaitingTimer();
+    document
+      .getElementById("cancel-waiting")
+      ?.addEventListener("click", () => this.cancelWaiting());
+  }
+
+  private cancelWaiting() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+    this.showCreateRoom();
+  }
+
+  private startWaitingTimer() {
+    let totalSeconds = 0;
+    const maxSeconds = 5 * 60; // 5 minutos
+    const timerElement = document.getElementById("waiting-timer")!;
+
+    this.timerInterval = setInterval(() => {
+      totalSeconds++;
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+      if (totalSeconds >= maxSeconds) {
+        clearInterval(this.timerInterval!);
+        this.timerInterval = null;
+        alert("Tiempo agotado. No se encontró rival.");
+        this.handleFriendsPlay();
+      }
+    }, 1000);
+  }
+
+  private showJoinRoom() {
+    const content = document.getElementById("content")!;
+    content.innerHTML = `
+      <section class="join-room-section">
+        <h2>Unirse a sala</h2>
+        <div class="join-room-form">
+          <input type="text" id="room-code" placeholder="Código" maxlength="6" pattern="[0-9]*" inputmode="numeric">
+          <button id="accept-room-code" class="accept-button">Aceptar</button>
+        </div>
+        <button id="back-to-friends" class="back-button">← Volver</button>
+      </section>
+    `;
+    const roomCodeInput = document.getElementById("room-code") as HTMLInputElement;
+    roomCodeInput.addEventListener("input", (e) => {
+      const target = e.target as HTMLInputElement;
+      target.value = target.value.replace(/\D/g, ''); // Solo números
+    });
+    document
+      .getElementById("accept-room-code")
+      ?.addEventListener("click", () => this.handleAcceptRoomCode());
+    document
+      .getElementById("back-to-friends")
+      ?.addEventListener("click", () => this.handleFriendsPlay());
+  }
+
+  private handleAcceptRoomCode() {
+    const roomCode = (document.getElementById("room-code") as HTMLInputElement).value;
+    if (roomCode.length === 6) {
+      this.showJoiningMatchmaking();
+    } else {
+      alert("El código debe tener exactamente 6 dígitos");
+    }
+  }
+
+  private showJoiningMatchmaking() {
+    const content = document.getElementById("content")!;
+    content.innerHTML = `
+      <section class="loading-section">
+        <h2>Cargando emparejamiento</h2>
+        <div class="spinner"></div>
+        <div id="timer">00:00</div>
+        <button id="cancel-matchmaking" class="cancel-button">Cancelar emparejamiento</button>
+      </section>
+    `;
+    this.startCountdownTimer();
+    document
+      .getElementById("cancel-matchmaking")
+      ?.addEventListener("click", () => this.cancelJoiningMatchmaking());
+  }
+
+  private startCountdownTimer() {
+    let totalSeconds = 0; // Empezar desde 0
+    const maxSeconds = 5 * 60; // 5 minutos
+    const timerElement = document.getElementById("timer")!;
+
+    this.timerInterval = setInterval(() => {
+      totalSeconds++;
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+      if (totalSeconds >= maxSeconds) {
+        clearInterval(this.timerInterval!);
+        this.timerInterval = null;
+        alert("Tiempo agotado. No se encontró emparejamiento.");
+        this.showJoinRoom();
+      }
+    }, 1000);
+  }
+
+  private cancelJoiningMatchmaking() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+    this.showJoinRoom();
   }
 
   private selectLevel(level: string) {
