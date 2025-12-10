@@ -435,6 +435,56 @@ class App {
     this.render();
   }
 
+  private initFreeDragAndDrop() {
+    const map = document.getElementById("game-map") as HTMLElement;
+    const cards = map.querySelectorAll(".card.draggable");
+
+    cards.forEach(card => {
+      let isDragging = false;
+      let startX = 0;
+      let startY = 0;
+      let initialLeft = 0;
+      let initialTop = 0;
+
+      card.addEventListener("mousedown", (e) => {
+        const mouseEvent = e as MouseEvent;
+        isDragging = true;
+        startX = mouseEvent.clientX;
+        startY = mouseEvent.clientY;
+        const rect = (card as HTMLElement).getBoundingClientRect();
+        initialLeft = rect.left - map.getBoundingClientRect().left;
+        initialTop = rect.top - map.getBoundingClientRect().top;
+        (card as HTMLElement).style.cursor = "grabbing";
+        e.preventDefault();
+      });
+
+      document.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
+
+        const mouseEvent = e as MouseEvent;
+        const mapRect = map.getBoundingClientRect();
+        let newLeft = initialLeft + (mouseEvent.clientX - startX);
+        let newTop = initialTop + (mouseEvent.clientY - startY);
+
+        // Restringir dentro del mapa
+        const cardWidth = 50;
+        const cardHeight = 70;
+        newLeft = Math.max(0, Math.min(newLeft, mapRect.width - cardWidth));
+        newTop = Math.max(0, Math.min(newTop, mapRect.height - cardHeight));
+
+        (card as HTMLElement).style.left = `${newLeft}px`;
+        (card as HTMLElement).style.top = `${newTop}px`;
+      });
+
+      document.addEventListener("mouseup", () => {
+        if (isDragging) {
+          isDragging = false;
+          (card as HTMLElement).style.cursor = "grab";
+        }
+      });
+    });
+  }
+
   private handleQuickPlay() {
     const content = document.getElementById("content")!;
     content.innerHTML = `
@@ -445,7 +495,7 @@ class App {
         <button id="cancel-matchmaking" class="cancel-button">Cancelar emparejamiento</button>
       </section>
     `;
-    this.startTimer();
+    this.startQuickPlayTimer();
     document
       .getElementById("cancel-matchmaking")
       ?.addEventListener("click", () => this.cancelMatchmaking());
@@ -796,6 +846,56 @@ class App {
       this.timerInterval = null;
     }
     this.showHome();
+  }
+
+  private startGame() {
+    const content = document.getElementById("content")!;
+    content.innerHTML = `
+      <section class="game-map">
+        <h2>¡Partida Iniciada!</h2>
+        <div class="map-container">
+          <div class="map" id="game-map">
+            <!-- Primera pila de 5 cartas -->
+            <div class="card draggable" draggable="true" data-card="A♠" style="left: 150px; top: 165px; z-index: 1;">A♠</div>
+            <div class="card draggable" draggable="true" data-card="K♥" style="left: 155px; top: 170px; z-index: 2;">K♥</div>
+            <div class="card draggable" draggable="true" data-card="Q♦" style="left: 160px; top: 175px; z-index: 3;">Q♦</div>
+            <div class="card draggable" draggable="true" data-card="J♣" style="left: 165px; top: 180px; z-index: 4;">J♣</div>
+            <div class="card draggable" draggable="true" data-card="10♠" style="left: 170px; top: 185px; z-index: 5;">10♠</div>
+            <!-- Segunda pila de 5 cartas -->
+            <div class="card draggable" draggable="true" data-card="9♥" style="left: 280px; top: 165px; z-index: 6;">9♥</div>
+            <div class="card draggable" draggable="true" data-card="8♦" style="left: 285px; top: 170px; z-index: 7;">8♦</div>
+            <div class="card draggable" draggable="true" data-card="7♣" style="left: 290px; top: 175px; z-index: 8;">7♣</div>
+            <div class="card draggable" draggable="true" data-card="6♠" style="left: 295px; top: 180px; z-index: 9;">6♠</div>
+            <div class="card draggable" draggable="true" data-card="5♥" style="left: 300px; top: 185px; z-index: 10;">5♥</div>
+          </div>
+        </div>
+        <p>Arrastra las cartas libremente dentro del mapa para organizarlas.</p>
+        <button id="back-to-home-game" class="back-button">← Volver al inicio</button>
+      </section>
+    `;
+    this.initFreeDragAndDrop();
+    document
+      .getElementById("back-to-home-game")
+      ?.addEventListener("click", () => this.showHome());
+  }
+
+  private startQuickPlayTimer() {
+    let seconds = 0;
+    const maxSeconds = 10; // 10 segundos
+    const timerElement = document.getElementById("timer")!;
+
+    this.timerInterval = setInterval(() => {
+      seconds++;
+      const minutes = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+      if (seconds >= maxSeconds) {
+        clearInterval(this.timerInterval!);
+        this.timerInterval = null;
+        this.startGame();
+      }
+    }, 1000);
   }
 
   private showTutorial() {
