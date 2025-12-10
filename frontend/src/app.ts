@@ -6,6 +6,8 @@ class App {
   private timerInterval: number | null = null;
   private gameInterval: number | null = null;
   private selectedLevel: string | null = null;
+  private gameTimeLeft: number = 30;
+  private gameScores: any[] = JSON.parse(localStorage.getItem("gameScores") || "[]");
 
   constructor() {
     this.init();
@@ -137,6 +139,9 @@ class App {
       document
         .getElementById("tutorial")
         ?.addEventListener("click", () => this.showTutorial());
+      document
+        .getElementById("scores")
+        ?.addEventListener("click", () => this.showScores());
     }
   }
 
@@ -519,14 +524,20 @@ class App {
   }
 
   private startGameTimer() {
-    let timeLeft = 30;
+    // Limpiar cualquier timer existente
+    if (this.gameInterval) {
+      clearInterval(this.gameInterval);
+      this.gameInterval = null;
+    }
+
+    this.gameTimeLeft = 30;
     const timerElement = document.getElementById("game-timer")!;
 
     this.gameInterval = setInterval(() => {
-      timeLeft--;
-      timerElement.textContent = `Tiempo restante: ${timeLeft}`;
+      this.gameTimeLeft--;
+      timerElement.textContent = `Tiempo restante: ${this.gameTimeLeft}`;
 
-      if (timeLeft <= 0) {
+      if (this.gameTimeLeft <= 0) {
         clearInterval(this.gameInterval!);
         this.gameInterval = null;
         this.checkGameResult();
@@ -582,11 +593,24 @@ class App {
     });
 
     if (allCardsPlaced && !overlapping) {
+      const timeTaken = 30 - this.gameTimeLeft;
+      const now = new Date();
+      const date = now.toLocaleDateString();
+      const time = now.toLocaleTimeString();
+
+      this.gameScores.push({
+        result: "Ganaste",
+        timeTaken: timeTaken,
+        date: date,
+        time: time
+      });
+      localStorage.setItem("gameScores", JSON.stringify(this.gameScores));
+
       const content = document.getElementById("content")!;
       content.innerHTML = `
         <section class="game-result">
           <h2>¡Ganaste!</h2>
-          <p>Colocaste todas las cartas correctamente sin superposiciones.</p>
+          <p>Colocaste todas las cartas correctamente sin superposiciones en ${timeTaken} segundos.</p>
           <button id="play-again">Jugar de nuevo</button>
           <button id="back-to-home-result" class="back-button">← Volver al inicio</button>
         </section>
@@ -649,16 +673,36 @@ class App {
     });
 
     const content = document.getElementById("content")!;
+    const now = new Date();
+    const date = now.toLocaleDateString();
+    const time = now.toLocaleTimeString();
+
     if (allCardsPlaced && !overlapping) {
+      const timeTaken = 30 - this.gameTimeLeft;
+      this.gameScores.push({
+        result: "Ganaste",
+        timeTaken: timeTaken,
+        date: date,
+        time: time
+      });
+      localStorage.setItem("gameScores", JSON.stringify(this.gameScores));
+
       content.innerHTML = `
         <section class="game-result">
           <h2>¡Ganaste!</h2>
-          <p>Colocaste todas las cartas correctamente sin superposiciones.</p>
+          <p>Colocaste todas las cartas correctamente sin superposiciones en ${timeTaken} segundos.</p>
           <button id="play-again">Jugar de nuevo</button>
           <button id="back-to-home-result" class="back-button">← Volver al inicio</button>
         </section>
       `;
     } else {
+      this.gameScores.push({
+        result: "Perdiste",
+        date: date,
+        time: time
+      });
+      localStorage.setItem("gameScores", JSON.stringify(this.gameScores));
+
       content.innerHTML = `
         <section class="game-result">
           <h2>Perdiste</h2>
@@ -1070,7 +1114,7 @@ class App {
 
   private startQuickPlayTimer() {
     let seconds = 0;
-    const maxSeconds = 10; // 10 segundos
+    const maxSeconds = 3; // 3 segundos
     const timerElement = document.getElementById("timer")!;
 
     this.timerInterval = setInterval(() => {
@@ -1106,6 +1150,41 @@ class App {
     `;
     document
       .getElementById("back-to-home-tutorial")
+      ?.addEventListener("click", () => this.showHome());
+  }
+
+  private showScores() {
+    const content = document.getElementById("content")!;
+    let scoresHTML = `
+      <section class="game-info">
+        <button id="back-to-home-scores" class="back-button">← Volver</button>
+        <h3>Puntuaciones</h3>
+    `;
+
+    if (this.gameScores.length === 0) {
+      scoresHTML += `<p>No hay puntuaciones registradas aún.</p>`;
+    } else {
+      scoresHTML += `<div class="scores-list">`;
+      this.gameScores.forEach((score, index) => {
+        scoresHTML += `
+          <div class="score-item ${score.result === 'Ganaste' ? 'win' : 'loss'}">
+            <h4>Partida ${index + 1}: ${score.result}</h4>
+            ${score.result === 'Ganaste' ? `<p>Tiempo: ${score.timeTaken} segundos</p>` : ''}
+            <p>Fecha: ${score.date}</p>
+            <p>Hora: ${score.time}</p>
+          </div>
+        `;
+      });
+      scoresHTML += `</div>`;
+    }
+
+    scoresHTML += `
+      </section>
+    `;
+
+    content.innerHTML = scoresHTML;
+    document
+      .getElementById("back-to-home-scores")
       ?.addEventListener("click", () => this.showHome());
   }
 }

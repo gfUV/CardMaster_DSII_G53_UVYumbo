@@ -996,3 +996,38 @@ button:focus-visible {
     height: 65px;
   }
 }
+
+.scores-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.score-item {
+  background: linear-gradient(135deg, var(--poker-light), #f0f0f0);
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  border: 1px solid var(--poker-medium-green);
+}
+
+.score-item.win {
+  border-color: var(--poker-medium-green);
+  background: linear-gradient(135deg, rgba(22, 140, 97, 0.1), #f0f0f0);
+}
+
+.score-item.loss {
+  border-color: var(--poker-red);
+  background: linear-gradient(135deg, rgba(216, 72, 72, 0.1), #f0f0f0);
+}
+
+.score-item h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--poker-dark-green);
+}
+
+.score-item p {
+  margin: 0.25rem 0;
+  color: var(--poker-dark-green);
+}
