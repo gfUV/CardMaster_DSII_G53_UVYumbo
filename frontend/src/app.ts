@@ -4,6 +4,7 @@ class App {
   private token: string | null = localStorage.getItem("token");
   private user: User | null = null;
   private timerInterval: number | null = null;
+  private gameInterval: number | null = null;
   private selectedLevel: string | null = null;
 
   constructor() {
@@ -100,23 +101,16 @@ class App {
           </div>
         </section>
         <section class="game-info">
-          <h3>¿Qué es CardMaster?</h3>
-          <p>CardMaster es un emocionante juego de cartas estratégico donde los jugadores compiten por acumular puntos mediante combinaciones inteligentes de cartas.</p>
-          <h4>Reglas básicas:</h4>
+          <h3>Reglas del juego: Card Master</h3>
+          <p>El objetivo principal de Card Master es organizar correctamente las cartas numeradas del 1 al 15 dentro del área de juego. Cada carta tiene un número único y debe ser colocada en el recuadro que le corresponde, según su posición numérica.</p>
+          <p>Al iniciar la partida, el jugador contará con un temporizador de 30 segundos, que representa el límite máximo para completar el reto. Durante este tiempo, deberá arrastrar y soltar cada carta en el recuadro correcto, procurando no cometer errores ni perder tiempo en movimientos innecesarios.</p>
+          <p>El juego finaliza de dos maneras posibles:</p>
           <ul>
-            <li>Cada jugador recibe un mazo inicial de cartas.</li>
-            <li>En cada turno, juega una carta para formar combinaciones.</li>
-            <li>Gana puntos por parejas, tríos y secuencias.</li>
-            <li>El juego termina cuando se agotan las cartas o un jugador alcanza el puntaje objetivo.</li>
+            <li><strong>Victoria:</strong> si logras colocar todas las cartas desde el número 1 hasta el número 15 en su recuadro respectivo antes de que el tiempo llegue a cero, el sistema mostrará un mensaje indicando que ganaste el juego, reconociendo tu rapidez y precisión.</li>
+            <li><strong>Derrota:</strong> si el temporizador llega a cero y aún faltan cartas por ubicar, o no se encuentran en el orden correcto, el juego mostrará que has perdido, lo que indica que no se completó el reto dentro del tiempo establecido.</li>
           </ul>
-          <h4>Cómo ganar:</h4>
-          <p>El jugador con más puntos al final de la partida es el ganador. Las combinaciones especiales otorgan bonificaciones extra.</p>
-          <h4>Modos de juego:</h4>
-          <ul>
-            <li><strong>Partida rápida:</strong> Juego corto contra la IA.</li>
-            <li><strong>Online:</strong> Compite contra jugadores de todo el mundo.</li>
-            <li><strong>Con amigos:</strong> Crea salas privadas para jugar con conocidos.</li>
-          </ul>
+          <p>No existen reglas adicionales ni condiciones especiales: la única regla del juego es organizar correctamente las cartas dentro del tiempo límite.</p>
+          <p>El desafío está en la velocidad, concentración y la habilidad del jugador para identificar rápidamente la posición correcta de cada carta y completar la secuencia antes de que finalice el tiempo.</p>
         </section>
       `;
     }
@@ -140,6 +134,9 @@ class App {
       document
         .getElementById("friends-play")
         ?.addEventListener("click", () => this.handleFriendsPlay());
+      document
+        .getElementById("tutorial")
+        ?.addEventListener("click", () => this.showTutorial());
     }
   }
 
@@ -435,9 +432,10 @@ class App {
     this.render();
   }
 
-  private initFreeDragAndDrop() {
+  private initDragAndDrop() {
     const map = document.getElementById("game-map") as HTMLElement;
     const cards = map.querySelectorAll(".card.draggable");
+    const dropZones = map.querySelectorAll(".drop-zone");
 
     cards.forEach(card => {
       let isDragging = false;
@@ -480,9 +478,199 @@ class App {
         if (isDragging) {
           isDragging = false;
           (card as HTMLElement).style.cursor = "grab";
+
+          // Snap to nearest drop zone if close enough
+          const cardRect = (card as HTMLElement).getBoundingClientRect();
+          const cardCenterX = cardRect.left + cardRect.width / 2;
+          const cardCenterY = cardRect.top + cardRect.height / 2;
+
+          let nearestZone: Element | null = null;
+          let minDistance = Infinity;
+
+          dropZones.forEach(zone => {
+            const zoneRect = zone.getBoundingClientRect();
+            const zoneCenterX = zoneRect.left + zoneRect.width / 2;
+            const zoneCenterY = zoneRect.top + zoneRect.height / 2;
+
+            const distance = Math.sqrt(
+              Math.pow(cardCenterX - zoneCenterX, 2) + Math.pow(cardCenterY - zoneCenterY, 2)
+            );
+
+            if (distance < minDistance) {
+              minDistance = distance;
+              nearestZone = zone;
+            }
+          });
+
+          if (nearestZone && minDistance < 50) { // Snap if within 50px
+            const zoneRect = (nearestZone as HTMLElement).getBoundingClientRect();
+            const mapRect = map.getBoundingClientRect();
+            const newLeft = zoneRect.left - mapRect.left;
+            const newTop = zoneRect.top - mapRect.top;
+            (card as HTMLElement).style.left = `${newLeft}px`;
+            (card as HTMLElement).style.top = `${newTop}px`;
+          }
+
+          // Check win condition after each move
+          this.checkWinCondition();
         }
       });
     });
+  }
+
+  private startGameTimer() {
+    let timeLeft = 30;
+    const timerElement = document.getElementById("game-timer")!;
+
+    this.gameInterval = setInterval(() => {
+      timeLeft--;
+      timerElement.textContent = `Tiempo restante: ${timeLeft}`;
+
+      if (timeLeft <= 0) {
+        clearInterval(this.gameInterval!);
+        this.gameInterval = null;
+        this.checkGameResult();
+      }
+    }, 1000);
+  }
+
+  private checkWinCondition() {
+    const map = document.getElementById("game-map") as HTMLElement;
+    const cards = map.querySelectorAll(".card.draggable");
+    const dropZones = map.querySelectorAll(".drop-zone");
+
+    let allCardsPlaced = true;
+    let overlapping = false;
+
+    cards.forEach(card => {
+      const cardRect = card.getBoundingClientRect();
+      let isInZone = false;
+
+      dropZones.forEach(zone => {
+        const zoneRect = zone.getBoundingClientRect();
+        if (
+          cardRect.left >= zoneRect.left &&
+          cardRect.right <= zoneRect.right &&
+          cardRect.top >= zoneRect.top &&
+          cardRect.bottom <= zoneRect.bottom
+        ) {
+          isInZone = true;
+        }
+      });
+
+      if (!isInZone) {
+        allCardsPlaced = false;
+      }
+    });
+
+    // Check for overlaps
+    cards.forEach((card, index) => {
+      const cardRect = card.getBoundingClientRect();
+      cards.forEach((otherCard, otherIndex) => {
+        if (index !== otherIndex) {
+          const otherRect = otherCard.getBoundingClientRect();
+          if (
+            cardRect.left < otherRect.right &&
+            cardRect.right > otherRect.left &&
+            cardRect.top < otherRect.bottom &&
+            cardRect.bottom > otherRect.top
+          ) {
+            overlapping = true;
+          }
+        }
+      });
+    });
+
+    if (allCardsPlaced && !overlapping) {
+      const content = document.getElementById("content")!;
+      content.innerHTML = `
+        <section class="game-result">
+          <h2>¡Ganaste!</h2>
+          <p>Colocaste todas las cartas correctamente sin superposiciones.</p>
+          <button id="play-again">Jugar de nuevo</button>
+          <button id="back-to-home-result" class="back-button">← Volver al inicio</button>
+        </section>
+      `;
+      document.getElementById("play-again")?.addEventListener("click", () => this.startGame());
+      document.getElementById("back-to-home-result")?.addEventListener("click", () => this.showHome());
+      // Clear timers if active
+      if (this.gameInterval) {
+        clearInterval(this.gameInterval);
+        this.gameInterval = null;
+      }
+    }
+  }
+
+  private checkGameResult() {
+    const map = document.getElementById("game-map") as HTMLElement;
+    const cards = map.querySelectorAll(".card.draggable");
+    const dropZones = map.querySelectorAll(".drop-zone");
+
+    let allCardsPlaced = true;
+    let overlapping = false;
+
+    cards.forEach(card => {
+      const cardRect = card.getBoundingClientRect();
+      let isInZone = false;
+
+      dropZones.forEach(zone => {
+        const zoneRect = zone.getBoundingClientRect();
+        if (
+          cardRect.left >= zoneRect.left &&
+          cardRect.right <= zoneRect.right &&
+          cardRect.top >= zoneRect.top &&
+          cardRect.bottom <= zoneRect.bottom
+        ) {
+          isInZone = true;
+        }
+      });
+
+      if (!isInZone) {
+        allCardsPlaced = false;
+      }
+    });
+
+    // Check for overlaps
+    cards.forEach((card, index) => {
+      const cardRect = card.getBoundingClientRect();
+      cards.forEach((otherCard, otherIndex) => {
+        if (index !== otherIndex) {
+          const otherRect = otherCard.getBoundingClientRect();
+          if (
+            cardRect.left < otherRect.right &&
+            cardRect.right > otherRect.left &&
+            cardRect.top < otherRect.bottom &&
+            cardRect.bottom > otherRect.top
+          ) {
+            overlapping = true;
+          }
+        }
+      });
+    });
+
+    const content = document.getElementById("content")!;
+    if (allCardsPlaced && !overlapping) {
+      content.innerHTML = `
+        <section class="game-result">
+          <h2>¡Ganaste!</h2>
+          <p>Colocaste todas las cartas correctamente sin superposiciones.</p>
+          <button id="play-again">Jugar de nuevo</button>
+          <button id="back-to-home-result" class="back-button">← Volver al inicio</button>
+        </section>
+      `;
+    } else {
+      content.innerHTML = `
+        <section class="game-result">
+          <h2>Perdiste</h2>
+          <p>No colocaste todas las cartas correctamente o hay superposiciones.</p>
+          <button id="play-again">Jugar de nuevo</button>
+          <button id="back-to-home-result" class="back-button">← Volver al inicio</button>
+        </section>
+      `;
+    }
+
+    document.getElementById("play-again")?.addEventListener("click", () => this.startGame());
+    document.getElementById("back-to-home-result")?.addEventListener("click", () => this.showHome());
   }
 
   private handleQuickPlay() {
@@ -853,27 +1041,28 @@ class App {
     content.innerHTML = `
       <section class="game-map">
         <h2>¡Partida Iniciada!</h2>
+        <div id="game-timer">Tiempo restante: 30</div>
         <div class="map-container">
           <div class="map" id="game-map">
-            <!-- Primera pila de 5 cartas -->
-            <div class="card draggable" draggable="true" data-card="A♠" style="left: 150px; top: 165px; z-index: 1;">A♠</div>
-            <div class="card draggable" draggable="true" data-card="K♥" style="left: 155px; top: 170px; z-index: 2;">K♥</div>
-            <div class="card draggable" draggable="true" data-card="Q♦" style="left: 160px; top: 175px; z-index: 3;">Q♦</div>
-            <div class="card draggable" draggable="true" data-card="J♣" style="left: 165px; top: 180px; z-index: 4;">J♣</div>
-            <div class="card draggable" draggable="true" data-card="10♠" style="left: 170px; top: 185px; z-index: 5;">10♠</div>
-            <!-- Segunda pila de 5 cartas -->
-            <div class="card draggable" draggable="true" data-card="9♥" style="left: 280px; top: 165px; z-index: 6;">9♥</div>
-            <div class="card draggable" draggable="true" data-card="8♦" style="left: 285px; top: 170px; z-index: 7;">8♦</div>
-            <div class="card draggable" draggable="true" data-card="7♣" style="left: 290px; top: 175px; z-index: 8;">7♣</div>
-            <div class="card draggable" draggable="true" data-card="6♠" style="left: 295px; top: 180px; z-index: 9;">6♠</div>
-            <div class="card draggable" draggable="true" data-card="5♥" style="left: 300px; top: 185px; z-index: 10;">5♥</div>
+            ${Array.from({ length: 15 }, (_, i) => {
+              const number = i + 1;
+              const left = 50 + (i % 5) * 80;
+              const top = 50 + Math.floor(i / 5) * 100;
+              return `<div class="card draggable" draggable="true" data-card="${number}" style="left: ${left}px; top: ${top}px; z-index: ${i + 1};">${number}</div>`;
+            }).join('')}
+            ${Array.from({ length: 15 }, (_, i) => {
+              const left = 100 + (i % 5) * 80;
+              const top = 100 + Math.floor(i / 5) * 100;
+              return `<div class="drop-zone" style="left: ${left}px; top: ${top}px;"></div>`;
+            }).join('')}
           </div>
         </div>
-        <p>Arrastra las cartas libremente dentro del mapa para organizarlas.</p>
+        <p>Coloca cada carta en un espacio verde sin que se junten o crucen. ¡Tienes 30 segundos!</p>
         <button id="back-to-home-game" class="back-button">← Volver al inicio</button>
       </section>
     `;
-    this.initFreeDragAndDrop();
+    this.initDragAndDrop();
+    this.startGameTimer();
     document
       .getElementById("back-to-home-game")
       ?.addEventListener("click", () => this.showHome());
@@ -903,23 +1092,16 @@ class App {
     content.innerHTML = `
       <section class="game-info">
         <button id="back-to-home-tutorial" class="back-button">← Volver</button>
-        <h3>¿Qué es CardMaster?</h3>
-        <p>CardMaster es un emocionante juego de cartas estratégico donde los jugadores compiten por acumular puntos mediante combinaciones inteligentes de cartas.</p>
-        <h4>Reglas básicas:</h4>
+        <h3>Reglas del juego: Card Master</h3>
+        <p>El objetivo principal de Card Master es organizar correctamente las cartas numeradas del 1 al 15 dentro del área de juego. Cada carta tiene un número único y debe ser colocada en el recuadro que le corresponde, según su posición numérica.</p>
+        <p>Al iniciar la partida, el jugador contará con un temporizador de 30 segundos, que representa el límite máximo para completar el reto. Durante este tiempo, deberá arrastrar y soltar cada carta en el recuadro correcto, procurando no cometer errores ni perder tiempo en movimientos innecesarios.</p>
+        <p>El juego finaliza de dos maneras posibles:</p>
         <ul>
-          <li>Cada jugador recibe un mazo inicial de cartas.</li>
-          <li>En cada turno, juega una carta para formar combinaciones.</li>
-          <li>Gana puntos por parejas, tríos y secuencias.</li>
-          <li>El juego termina cuando se agotan las cartas o un jugador alcanza el puntaje objetivo.</li>
+          <li><strong>Victoria:</strong> si logras colocar todas las cartas desde el número 1 hasta el número 15 en su recuadro respectivo antes de que el tiempo llegue a cero, el sistema mostrará un mensaje indicando que ganaste el juego, reconociendo tu rapidez y precisión.</li>
+          <li><strong>Derrota:</strong> si el temporizador llega a cero y aún faltan cartas por ubicar, o no se encuentran en el orden correcto, el juego mostrará que has perdido, lo que indica que no se completó el reto dentro del tiempo establecido.</li>
         </ul>
-        <h4>Cómo ganar:</h4>
-        <p>El jugador con más puntos al final de la partida es el ganador. Las combinaciones especiales otorgan bonificaciones extra.</p>
-        <h4>Modos de juego:</h4>
-        <ul>
-          <li><strong>Partida rápida:</strong> Juego corto contra la IA.</li>
-          <li><strong>Online:</strong> Compite contra jugadores de todo el mundo.</li>
-          <li><strong>Con amigos:</strong> Crea salas privadas para jugar con conocidos.</li>
-        </ul>
+        <p>No existen reglas adicionales ni condiciones especiales: la única regla del juego es organizar correctamente las cartas dentro del tiempo límite.</p>
+        <p>El desafío está en la velocidad, concentración y la habilidad del jugador para identificar rápidamente la posición correcta de cada carta y completar la secuencia antes de que finalice el tiempo.</p>
       </section>
     `;
     document
