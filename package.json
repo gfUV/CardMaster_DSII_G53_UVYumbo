@@ -8,7 +8,7 @@
     "frontend"
   ],
   "scripts": {
-    "prepare": "node -e \"if (process.env.CI !== 'true') { process.exit(1) }\" || husky install",
+    "prepare": "node -e \"try { require('husky').install() } catch (e) {}\"",
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
